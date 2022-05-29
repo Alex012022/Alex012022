@@ -1,15 +1,18 @@
-'''
+"""
 Модуль для работы с категориями товара
-'''
-class Category:
-    def __init__(self, categoryNum=int, categoryName=None):
-        self.categoryNum = categoryNum    #Номер категории
-        self.categoryName = categoryName  #Название категории товара
+"""
 
-        '''
-            Функция вывода списка категорий товара
-            
-        '''
+
+class Category:
+    """
+    Функция вывода списка категорий товара
+    """
+
+    def __init__(self, categoryNum=int, categoryName=None):
+        self.__categoryNum = categoryNum  # Номер категории
+        self.__categoryName = categoryName  # Название категории товара
+
+    @staticmethod
     def checkCategory():
         print('Выберете категорию')
         with open('list.txt', encoding='utf-8-sig') as file:
@@ -23,3 +26,9 @@ class Category:
             for line in res_list:
                 print(f'{i} - {line}')
                 i += 1
+
+    def set_category_name(self, categoryName):
+        self.__categoryName = categoryName
+
+    def get_category_name(self):
+        return self.__categoryName

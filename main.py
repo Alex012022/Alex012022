@@ -1,91 +1,100 @@
+"""
+ch: Переменная продолжения совершения покупок (значения y/n)
+selectedCategory: переменная содержащая номер выбранной категории
+cat_Name: переменная содержащая наименование выбранной категории
+selectedProduct: переменная содержащая номер выбранног товара
+"""
+import re
+
 from utils.Password import check_buyer
 from utils.category import Category
 from utils.Product import Product
 from utils.Basket import Basket
 
-'''
+"""
 Проверка логина и пароль пользователя
-ch: Переменная продолжения совершения покупок (значения y/n)
-selectedCategory: переменная содержащая номер выбранной категории
-cat_Name: переменная содержащая наименование выбранной категории
-selectedProduct: переменная содержащая номер выбранног товара
+"""
 
-'''
 check_buyer()
 
 ch = 'y'
 
+totalBasketList = {}  # словарь будет использоваться для подсчета количества и суммы товара в корзине
+j = 1  # ключ словаря totalBasketList
+
 while ch == 'y':
 
-    '''
+    """
     Вывод списка категории товара
-    '''
+    """
     Category.checkCategory()
 
-    selectedCategory = int(input('выбранная категория: '))
+    selectedCategory = int(input('Выбранная категория: '))
 
-    '''
+    """
     Проверка существования номера категории
-    '''
-    while (selectedCategory not in [1,2,3,4]):
+    """
+    while (selectedCategory not in [1, 2, 3, 4]):
         print('Выбранной категории не существует')
         selectedCategory = int(input('Выберите категорию: '))
 
-    '''
+    """
     Отображение наименований выбранной категории
-    '''
+    """
+    cat_Name = Category(0, '')
     if selectedCategory == 1:
-        cat_Name = Category(categoryName='Мелкая бытовая техника')
-        print(cat_Name.categoryName)
+        cat_Name.set_category_name('Мелкая бытовая техника')
     elif selectedCategory == 2:
-        cat_Name = Category(categoryName='Крупная бытовая техника')
-        print(cat_Name.categoryName)
+        cat_Name.set_category_name('Крупная бытовая техника')
     elif selectedCategory == 3:
-        cat_Name = Category(categoryName='Техника для дома')
-        print(cat_Name.categoryName)
+        cat_Name.set_category_name('Техника для дома')
     elif selectedCategory == 4:
-        cat_Name = Category(categoryName='Красота и здоровьеа')
-        print(cat_Name.categoryName)
+        cat_Name.set_category_name('Красота и здоровье')
     else:
         print('Указанной категории не существует')
 
-    '''
+    print(cat_Name.get_category_name())
+
+    """
     Вывод списка товара из указанной категории
-    '''
+    """
     i = 1
     product_dic = {}  # создаем пустой словарь
     with open("list.txt", encoding="utf-8") as f:
         for line in f:
-            if line.split(",")[0] == cat_Name.categoryName:
+            if line.split(",")[0] == cat_Name.get_category_name():
                 product_srt = Product(line.split(",")[1], line.split(",")[2], line.split(",")[3])
-                product_dic[i] = product_srt.productName, product_srt.productPrice   # в цикле заполняем словарь названием товара
+                product_dic[i] = product_srt.productName, product_srt.productPrice  # в цикле заполняем словарь названием товара
                 print(i, 'Название товара: ', product_srt.productName)
                 print(' ' * 4, 'Цена: ', product_srt.productPrice)
                 print(' ' * 4, 'Рейтинг товара', product_srt.productRating)
-                i += 1       # подсчет количества строк
+                i += 1  # подсчет количества строк
 
-
-    '''
+    """
     Отображение добавленного в корзину товара
-    '''
-    selectedProduct = int(input('выбранный товар: '))
+    """
+    selectedProduct = int(input('Выбранный товар: '))
+
+    """
+    Проверка существования выбранного товара
+    """
+    while selectedProduct not in product_dic.keys():
+        print('Указанного товара не существует. Выберите товар')
+        selectedProduct = int(input('Выбранный товар: '))
+    """
+    Добавление выбранного товара в корзину
+    """
     if selectedProduct in product_dic:
-        #print(selectedProduct, product_dic[selectedProduct])
         basket1 = Basket(product_dic[selectedProduct])
-        print('В корзину добавлен товар: ', basket1.productName)
+        basket2 = re.sub("[(|'|)]", "", str(basket1.productName))
+        print('В корзину добавлен товар: ', basket2)
+        basket3 = int(basket2.rpartition(' ')[-1])
+        totalBasketList[j] = basket3  # Запись данных о добавленном товаре
 
-        '''
-        Запись данных о добавленном товаре в файл 'Basket.txt'
-        '''
-        fp = open('Basket.txt', "a", encoding="utf-8")  # открыть файл для записи с сохранением существующих записей (а- добавление записи в конец списка)
-        fp.write(str(basket1.productName) + '\n')
-        fp.close()
-    #print('Товар добавлен в корзину')
-
-    ch = input('Продолжить покупки (y/n)? ')
-
-    '''
+    ch = input('Продолжить покупки (y/n)? ').lower()  # выбор продолжения (завершения) покупки без учета регистра введенного символа
+    j += 1
+    """
     Вывод итоговых данных о количестве товара и сумме покупки
-    '''
+    """
     if ch == 'n':
-        Basket.basketSum()
+        Basket.basketSum(totalBasketList)
